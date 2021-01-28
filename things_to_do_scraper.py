@@ -10,7 +10,7 @@ path_to_file = "/Users/gius/Desktop/reviews.csv"
 num_page = 10
 
 # default tripadvisor website of hotel or things to do (attraction/monument) 
-url = "https://www.tripadvisor.com/Hotel_Review-g60763-d1218720-Reviews-The_Standard_High_Line-New_York_City_New_York.html"
+url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pompeii_Archaeological_Park-Pompeii_Province_of_Naples_Campania.html"
 #url = "https://www.tripadvisor.com/Attraction_Review-g187791-d192285-Reviews-Colosseum-Rome_Lazio.html"
 
 # if you pass the inputs in the command line
