@@ -7,7 +7,7 @@ import time
 path_to_file = "/Users/gius/Desktop/reviews.csv"
 
 # default number of scraped pages
-num_page = 30
+num_page = 10
 
 # default tripadvisor website of hotel or things to do (attraction/monument) 
 url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pompeii_Archaeological_Park-Pompeii_Province_of_Naples_Campania.html"
