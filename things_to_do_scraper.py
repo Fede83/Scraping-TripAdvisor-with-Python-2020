@@ -1,61 +1,88 @@
 import sys
 import csv
 from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
 import time
 from random import randint
 
 
 # default path to file to store data
-path_to_file = "reviews.csv"
+path_to_file = "reviews_1.csv"
 
 # default number of scraped pages
-num_pages = 1
+num_pages = 17
 
 # default tripadvisor website of hotel or things to do (attraction/monument) 
 url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pompeii_Archaeological_Park-Pompeii_Province_of_Naples_Campania.html"
-#url = "https://www.tripadvisor.com/Attraction_Review-g187791-d192285-Reviews-Colosseum-Rome_Lazio.html"
 
 # default language
 language = "en"
 
+# default rating
+rating = 1
+
 # if you pass the inputs in the command line
-if len(sys.argv) == 5:
+if len(sys.argv) == 6:
     path_to_file = sys.argv[1]
     num_pages = int(sys.argv[2])
     url = sys.argv[3]
     language = sys.argv[4]
+    rating = sys.argv[5]
 
 # import the webdriver
 driver = webdriver.Safari()
+
+
+def set_rating(rating):
+    # Define the javascript to select rating
+    select_rating_js = """
+                document.evaluate(".//input[@type='checkbox'][@value='__RATING__']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
+                """.replace("__RATING__", str(rating))
+
+    # Run the script
+    driver.execute_script(select_rating_js)
+
+
+def set_language(language):
+    # Define the javascript to select language
+    select_language_js = """
+               document.evaluate(".//input[@type='radio'][@value='__LANGUAGE__']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
+               """.replace("__LANGUAGE__", language)
+
+    # Run the script
+    driver.execute_script(select_language_js)
+
+
+def next_page():
+    # Define the javascript to select language
+    next_page_js = """
+               document.evaluate(".//a[@class='ui_button nav next primary ']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
+               """
+
+    # Run the script
+    driver.execute_script(next_page_js)
+
 
 # open the file to save the review
 csvFile = open(path_to_file, 'w', encoding="utf-8")
 csvWriter = csv.writer(csvFile)
 csvWriter.writerow(["date", "rating", "title", "review"])
 
-# change the value inside the range to save more or less reviews
-for i in range(0, num_pages):
+# Get the url
+print("URL:", url)
+driver.get(url)
 
-    # Get the url
-    print("URL:", url)
-    driver.get(url)
+# change the value inside the range to save more or less reviews
+for num_page in range(0, num_pages):
 
     # Wait few seconds
-    time.sleep(randint(2, 7))
+    time.sleep(10)
 
-    # Define the javascript for select language
-    select_language_js = """
-        document.evaluate(".//input[@type='radio'][@value='__LANGUAGE__']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
-        """.replace("__LANGUAGE__", language)
-
-    # Run the script
-    driver.execute_script(select_language_js)
+    if num_page == 0:
+        set_rating(rating)
+        set_language(language)
 
     # Wait for response
-    time.sleep(2)
+    time.sleep(10)
 
     # expand the review
     driver.find_element_by_xpath(".//div[contains(@data-test-target, 'expand-review')]").click()
@@ -71,7 +98,6 @@ for i in range(0, num_pages):
 
     # for each review...
     for j in range(reviews_per_page):
-
         # Get the rating
         rating = reviews[j].find_element_by_xpath(".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3]
 
@@ -86,8 +112,10 @@ for i in range(0, num_pages):
 
         print(date, rating, title)
         csvWriter.writerow([date, rating, title, review])
-        
+
     # get the next url
-    url = driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').get_attribute("href")
+    #url = driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').get_attribute("href")
+    #driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').click()
+    next_page()
 
 driver.quit()
