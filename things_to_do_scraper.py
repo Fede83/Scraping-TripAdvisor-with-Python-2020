@@ -2,16 +2,14 @@ import sys
 import csv
 from selenium import webdriver
 import time
-from random import randint
-
 
 # default path to file to store data
-path_to_file = "reviews_1.csv"
+path_to_file = "reviews_1ex.csv"
 
 # default number of scraped pages
 num_pages = 17
 
-# default tripadvisor website of hotel or things to do (attraction/monument) 
+# default tripadvisor website of hotel or things to do (attraction/monument)
 url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pompeii_Archaeological_Park-Pompeii_Province_of_Naples_Campania.html"
 
 # default language
@@ -62,6 +60,30 @@ def next_page():
     driver.execute_script(next_page_js)
 
 
+def check_autotranslate():
+    # Define check javascript
+    check_autoTranslate_js = """
+    let autoTranslate=document.evaluate(".//input[@id='autoTranslateNo']", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    if (autoTranslate!=null) {
+        autoTranslate.click();
+        return true;
+    }
+    """
+
+    # Run the script
+    return driver.execute_script(check_autoTranslate_js)
+
+
+def show_more():
+
+    # Define the show more javascript
+    show_more_js = """
+    document.evaluate(".//div[contains(@data-test-target, 'expand-review')]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue.click();
+    """
+
+    # Run the script
+    driver.execute_script(show_more_js)
+
 # open the file to save the review
 csvFile = open(path_to_file, 'w', encoding="utf-8")
 csvWriter = csv.writer(csvFile)
@@ -73,7 +95,7 @@ driver.get(url)
 
 # change the value inside the range to save more or less reviews
 for num_page in range(0, num_pages):
-
+    print("Exploring:", num_page)
     # Wait few seconds
     time.sleep(10)
 
@@ -81,11 +103,33 @@ for num_page in range(0, num_pages):
         set_rating(rating)
         set_language(language)
 
+
+    if check_autotranslate() is True:
+        time.sleep(10)
+        break
+
+    # go to the next page
+    next_page()
+
+
+# change the value inside the range to save more or less reviews
+for num_page in range(0, num_pages):
+
+    print("Downloading:",num_page)
+
+    # Wait few seconds
+    time.sleep(10)
+
+    if check_autotranslate() is True:
+        # Wait few seconds
+        time.sleep(20)
+
     # Wait for response
     time.sleep(10)
 
     # expand the review
-    driver.find_element_by_xpath(".//div[contains(@data-test-target, 'expand-review')]").click()
+    show_more()
+    time.sleep(5)
 
     # get the reviews
     reviews = driver.find_elements_by_xpath("//div[@data-reviewid]")
@@ -99,7 +143,8 @@ for num_page in range(0, num_pages):
     # for each review...
     for j in range(reviews_per_page):
         # Get the rating
-        rating = reviews[j].find_element_by_xpath(".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute("class").split("_")[3]
+        rating = reviews[j].find_element_by_xpath(".//span[contains(@class, 'ui_bubble_rating bubble_')]").get_attribute(
+            "class").split("_")[3]
 
         # Get the title
         title = reviews[j].find_element_by_xpath(".//div[contains(@data-test-target, 'review-title')]").text
@@ -113,9 +158,7 @@ for num_page in range(0, num_pages):
         print(date, rating, title)
         csvWriter.writerow([date, rating, title, review])
 
-    # get the next url
-    #url = driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').get_attribute("href")
-    #driver.find_element_by_xpath('.//a[@class="ui_button nav next primary "]').click()
+    # go to the next page
     next_page()
 
 driver.quit()
