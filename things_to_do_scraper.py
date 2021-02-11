@@ -4,10 +4,10 @@ from selenium import webdriver
 import time
 
 # default path to file to store data
-path_to_file = "reviews_5.csv"
+path_to_file = "reviews_Pompeii_3.csv"
 
 # default number of scraped pages
-num_pages = 25
+num_pages = 120
 
 # default tripadvisor website of hotel or things to do (attraction/monument)
 url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pompeii_Archaeological_Park-Pompeii_Province_of_Naples_Campania.html"
@@ -16,7 +16,7 @@ url = "https://www.tripadvisor.it/Attraction_Review-g187786-d195477-Reviews-Pomp
 language = "en"
 
 # default rating
-rating = 5
+rating = 3
 
 # if you pass the inputs in the command line
 if len(sys.argv) == 6:
